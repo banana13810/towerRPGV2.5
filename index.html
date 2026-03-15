@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>塔RPG Ver7.5.2（MP数字表示・攻撃復活）</title>
+<title>塔RPG Ver7.5.3</title>
 <style>
 body{font-family:sans-serif;text-align:center;background:#111;color:white;margin:0;padding:0;}
 .game{max-width:480px;margin:auto;padding:10px;}
@@ -18,7 +18,7 @@ button{margin:3px;padding:10px;font-size:16px;border-radius:6px;}
 </head>
 <body>
 <div class="game">
-<h1>🏯塔RPG Ver7.5.2</h1>
+<h1>🏯塔RPG Ver7.5.3</h1>
 
 <h3 id="enemy"></h3>
 <div class="bar"><div id="enemybar" class="enemyBar"></div></div>
@@ -67,7 +67,7 @@ let rarityList=["common","rare","epic","legend","mythic"], rarityOrder={common:1
 let logBox=document.getElementById("log");
 let logHistory=[];
 
-// ログ関数（最新5件）
+// ログ（最新5件）
 function log(text){
   logHistory.unshift(text);
   if(logHistory.length>5) logHistory.pop();
@@ -226,8 +226,7 @@ let skills=[
     if(playerMP<15){alert("MPが足りない"); return;}
     playerMP-=15;
     let heal=30;
-    playerHP+=heal;
-    if(playerHP>playerMax)playerHP=playerMax;
+    playerHP+=heal;if(playerHP>playerMax)playerHP=playerMax;
     log("💖 ヒールで "+heal+" 回復!");
     update();
   }},
@@ -241,16 +240,14 @@ let skills=[
   }}
 ];
 
-// スキルボタン描画（ゲーム開始時のみ）
+// スキルボタン描画（最初だけ）
 function drawSkills(){
   let html="";
-  skills.forEach((s,i)=>{
-    html += `<button onclick="skills[${i}].action()">${s.name} (${s.cost}MP)</button>`;
-  });
+  skills.forEach((s,i)=>{html += `<button onclick="skills[${i}].action()">${s.name} (${s.cost}MP)</button>`;});
   document.getElementById("skillButtons").innerHTML=html;
 }
 
-// 更新（バーや数字だけ）
+// 更新（HP/MP/EXP/バー）
 function update(){
   document.getElementById("floor").innerText=floor;
   document.getElementById("hp").innerText=playerHP+"/"+playerMax;
@@ -264,10 +261,27 @@ function update(){
 }
 
 // セーブ
-function saveGame(){localStorage.setItem("towerSave",JSON.stringify({floor, level, gold, attackPower, playerMax, playerHP, playerMaxMP, playerMP, inventory, equipment}));alert("ゲームをセーブしました！");}
+function saveGame(){
+  localStorage.setItem("towerSave",JSON.stringify({floor, level, gold, attackPower, playerMax, playerHP, playerMaxMP, playerMP, inventory, equipment}));
+  alert("ゲームをセーブしました！");
+}
 
-// 読み込み
-function loadGame(){let data=localStorage.getItem("towerSave");if(!data)return;let d=JSON.parse(data);floor=d.floor;level=d.level;gold=d.gold;attackPower=d.attackPower;playerMax=d.playerMax;playerHP=d.playerHP;playerMaxMP=d.playerMaxMP;playerMP=d.playerMP;inventory=d.inventory||[];equipment=d.equipment||{weapon:null,armor:null,ring:null};}
+// 読み込み（古いセーブにも対応）
+function loadGame(){
+  let data=localStorage.getItem("towerSave");
+  if(!data) return;
+  let d=JSON.parse(data);
+  floor=d.floor||1;
+  level=d.level||1;
+  gold=d.gold||0;
+  attackPower=d.attackPower||5;
+  playerMax=d.playerMax||100;
+  playerHP=d.playerHP!==undefined ? d.playerHP : playerMax;
+  playerMaxMP=d.playerMaxMP||50;
+  playerMP=d.playerMP!==undefined ? d.playerMP : playerMaxMP;
+  inventory=d.inventory||[];
+  equipment=d.equipment||{weapon:null,armor:null,ring:null};
+}
 
 // 初期化
 loadGame();
